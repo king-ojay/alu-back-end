@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 import requests
 import sys
-"""      python script that returns TODO list progress for a given employee ID
+"""
+    python script that returns TODO list progress for a given employee ID
 """
 
 def get_employee_todo_progress(employee_id):
