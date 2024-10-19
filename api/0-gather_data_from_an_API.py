@@ -1,4 +1,11 @@
 #!/usr/bin/python3
+"""
+This module fetches and displays the TODO list progress for a given employee ID
+from a public API. It retrieves employee data and their associated tasks, 
+calculating the number of completed tasks and displaying them in a formatted output.
+
+"""
+
 import requests
 import sys
 
