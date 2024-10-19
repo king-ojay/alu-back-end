@@ -1,31 +1,26 @@
 #!/usr/bin/python3
 """
-    python script that returns TODO list progress for a given employee ID
+Fetch and display employee TODO list progress.
 """
-import json
 import requests
-from sys import argv
-
+import sys
 
 if __name__ == "__main__":
-    """ Functions for gathering  data from an API """
-    request_employee = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
-    employee = json.loads(request_employee.text)
-    employee_name = employee.get("name")
-    request_todos = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
-    tasks = {}
-    employee_todos = json.loads(request_todos.text)
+    employee_id = sys.argv[1]
+    
+    # Fetch employee data
+    employee_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
+    todos_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
+    
+    employee_response = requests.get(employee_url).json()
+    todos_response = requests.get(todos_url).json()
 
-    for dictionary in employee_todos:
-        tasks.update({dictionary.get("title"): dictionary.get("completed")})
+    employee_name = employee_response.get('name')
+    total_tasks = len(todos_response)
+    done_tasks = len([task for task in todos_response if task.get('completed')])
 
-    EMPLOYEE_NAME = employee_name
-    TOTAL_NUMBER_OF_TASKS = len(tasks)
-    NUMBER_OF_DONE_TASKS = len([k for k, v in tasks.items() if v is True])
-    print("Employee {} is done with tasks({}/{}):".format(
-        EMPLOYEE_NAME, NUMBER_OF_DONE_TASKS, TOTAL_NUMBER_OF_TASKS))
-    for k, v in tasks.items():
-        if v is True:
-            print("\t {}".format(k))
+    print(f"Employee {employee_name} is done with tasks({done_tasks}/{total_tasks}):")
+    
+    for task in todos_response:
+        if task.get('completed'):
+            print("\t", task.get('title'))
