@@ -1,42 +1,45 @@
 #!/usr/bin/python3
-"""gathers data from an API """
-
-import json
 import requests
+import sys
+"""      python script that returns TODO list progress for a given employee ID
+"""
 
+def get_employee_todo_progress(employee_id):
+    # API base URL
+    base_url = "https://jsonplaceholder.typicode.com"
+    
+    # Get employee information
+    employee_response = requests.get(f"{base_url}/users/{employee_id}")
+    employee_data = employee_response.json()
+    employee_name = employee_data['name']
+    
+    # Get TODO list for the employee
+    todos_response = requests.get(f"{base_url}/users/{employee_id}/todos")
+    todos_data = todos_response.json()
+    
+    # Calculate progress
+    total_tasks = len(todos_data)
+    completed_tasks = sum(1 for todo in todos_data if todo['completed'])
+    
+    # Print progress
+    print(f"Employee {employee_name} is done with tasks({completed_tasks}/{total_tasks}):")
+    
+    # Print completed tasks
+    for todo in todos_data:
+        if todo['completed']:
+            print(f"\t {todo['title']}")
 
-def get_employee_task(employee_id):
-    """Doc"""
-    url = "https://jsonplaceholder.typicode.com/users/{}" \
-        .format(employee_id)
-
-    user_info = requests.request('GET', url).json()
-
-    employee_username = user_info["username"]
-    todo = "https://jsonplaceholder.typicode.com/users/{}/todos"
-    todo = todo.format(employee_id)
-    todos_info = requests.request('GET', todo).json()
-    return [
-        dict(zip(["task", "completed", "username"],
-                 [task["title"], task["completed"], employee_username]))
-        for task in todos_info]
-
-
-def get_employee_ids():
-    """Doc"""
-    user = "https://jsonplaceholder.typicode.com/users/"
-
-    users_info = requests.request('GET', user).json()
-    ids = list(map(lambda user: user["id"], users_info))
-    return ids
-
-
-if __name__ == '__main__':
-
-    employee_id = get_employee_ids()
-
-    with open('todo_all_employees.json', "w") as f:
-        all_users = {}
-        for employee_id in employee_id:
-            all_users[str(employee_id)] = get_employee_task(employee_id)
-        f.write(json.dumps(all_users))
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 script_name.py <employee_id>")
+        sys.exit(1)
+    
+    try:
+        employee_id = int(sys.argv[1])
+        get_employee_todo_progress(employee_id)
+    except ValueError:
+        print("Error: Employee ID must be an integer.")
+        sys.exit(1)
+    except requests.RequestException as e:
+        print(f"Error: Unable to fetch data from the API. {e}")
+        sys.exit(1)
