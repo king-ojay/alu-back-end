@@ -1,39 +1,31 @@
 #!/usr/bin/python3
 """
-This Python script fetches and displays TODO list progress for a given employee ID.
+    python script that returns TODO list progress for a given employee ID
 """
-
+import json
 import requests
-import sys
+from sys import argv
+
 
 if __name__ == "__main__":
-    # Ensure the user provides an integer ID
-    if len(sys.argv) != 2:
-        print("Usage: ./0-gather_data_from_an_API.py <employee_id>")
-        sys.exit(1)
-    
-    try:
-        employee_id = int(sys.argv[1])
-    except ValueError:
-        print("Employee ID must be an integer.")
-        sys.exit(1)
+    """ Functions for gathering  data from an API """
+    request_employee = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
+    employee = json.loads(request_employee.text)
+    employee_name = employee.get("name")
+    request_todos = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
+    tasks = {}
+    employee_todos = json.loads(request_todos.text)
 
-    # Fetch employee data from API
-    url_user = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
-    user_response = requests.get(url_user).json()
+    for dictionary in employee_todos:
+        tasks.update({dictionary.get("title"): dictionary.get("completed")})
 
-    # Fetch todo list data from API
-    url_todos = f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}"
-    todos_response = requests.get(url_todos).json()
-
-    # Get employee name
-    employee_name = user_response.get("name")
-
-    # Get completed tasks and total tasks
-    completed_tasks = [todo for todo in todos_response if todo.get("completed")]
-    total_tasks = len(todos_response)
-
-    # Print employee's TODO list progress
-    print(f"Employee {employee_name} is done with tasks({len(completed_tasks)}/{total_tasks}):")
-    for task in completed_tasks:
-        print(f"\t {task.get('title')}")
+    EMPLOYEE_NAME = employee_name
+    TOTAL_NUMBER_OF_TASKS = len(tasks)
+    NUMBER_OF_DONE_TASKS = len([k for k, v in tasks.items() if v is True])
+    print("Employee {} is done with tasks({}/{}):".format(
+        EMPLOYEE_NAME, NUMBER_OF_DONE_TASKS, TOTAL_NUMBER_OF_TASKS))
+    for k, v in tasks.items():
+        if v is True:
+            print("\t {}".format(k))
